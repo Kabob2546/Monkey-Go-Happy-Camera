@@ -2,7 +2,7 @@ var bananaImage, obstacleImage, monkeyImage, backGroundImage;
 var monkey;
 var obstacleGroup, bananaGroup;
 var ground, backGround;
-var score;
+var score, size;
 
 function preload(){
   bananaImage = loadImage("banana.png");
@@ -20,20 +20,20 @@ function setup() {
   ground = createSprite(200,380,400,20);
   ground.visible = false;
   
-  monkey = createSprite(50,-50,10,10);
+  monkey = createSprite(50,-100,10,10);
   monkey.addAnimation("monkey",monkeyImage);
   monkey.scale = 0.1;
   
   bananaGroup = createGroup();
   obstacleGroup = createGroup();
   
-  score = 10;
+  size = 10;
 }
 
 function draw() {
   background(220);
   
- if(keyDown("space") && monkey.y >= (365 - (score * 3))){
+ if(keyDown("space") && monkey.y >= (365 - (size * 3)) && monkey.velocityX > 0){
     monkey.velocityY = -15;
  }
   monkey.velocityY += 1;
@@ -43,47 +43,55 @@ function draw() {
     backGround.x = monkey.x + 350
   }
   
-  if(frameCount % 80 === 0 && score > 0){
+  if(frameCount % 80 === 0 && size > 0){
     createBanana();
   }
   
-  if(frameCount % 60 === 0 && score > 0){
+  if(frameCount % 60 === 0 && size > 0){
     createObstacle();
   }
   
   if(bananaGroup.isTouching(monkey)){
     bananaGroup.destroyEach();
-    score += 10;
+    size += 10;
   }
   
   if(obstacleGroup.isTouching(monkey)){
     obstacleGroup.destroyEach();
-    score -= 10;
+    size -= 10;
   }
+
+
   
-  switch(score){
+  switch(size){
     case 0: monkey.scale = 0.1;
       break;
-    default: monkey.scale = (score / 100); 
+    default: monkey.scale = (size / 100); 
   }
   
   drawSprites();
 
-    if(score < 1){
-    bananaGroup.setVelocityEach(0);
-    obstacleGroup.destroyEach();
-    bananaGroup.destroyEach(-1);
+    if(size < 1){
+    end();
     fill("red");
     text("GAME OVER",monkey.position.x + 100,200);
-    monkey.velocityX = 0;
-    ground.velocityX = 0;
   }else{
-    camera.position.x += 8;
     ground.velocityX  = 8;
     monkey.velocityX = 8
+
+    if(score >= 20){
+      end();
+      fill("blue");
+      textSize = 100;
+      text("Congratulations!", monkey.position.x + 90,200);
+    }
   } 
+  score = floor(monkey.position.x/100)
   textSize = 20;
   text("Score: " + score,monkey.position.x + 250,20);
+  if(size >= 1 && score < 20){
+    camera.position.x += 8
+  }
 }
 
 function createBanana(){
@@ -105,4 +113,12 @@ function createObstacle(){
   obstacle.setCollider("circle",0,-10,40);
   obstacle.lifetime = 55;
   obstacleGroup.add(obstacle);
+}
+
+function end(){
+  bananaGroup.setVelocityEach(0);
+  obstacleGroup.destroyEach();
+  bananaGroup.destroyEach(-1);
+  monkey.velocityX = 0;
+  ground.velocityX = 0;
 }
